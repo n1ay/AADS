@@ -7,6 +7,7 @@ import pandas as pd
 
 
 def draw_points(points_all, points_hull):
+    points_hull.append(points_hull[0])
     pax, pay = [p.x for p in points_all], [p.y for p in points_all]
     phx, phy = [p.x for p in points_hull], [p.y for p in points_hull]
     plt.plot(pax, pay, 'b', linewidth=0, marker='o')
@@ -37,7 +38,6 @@ def transform_points(points):
     ref_point.set_coordinates(point_tmp.x, point_tmp.y)
 
     points_polar_sorted = sorted(points_ref, key=lambda p: (p.phi, p.r))
-    points_polar_sorted.append(points_polar_sorted[0])
     return [Point(p.x - vector.x, p.y - vector.y) for p in points_polar_sorted]
 
 
