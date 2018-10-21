@@ -64,6 +64,7 @@ def main():
         points.append(Point(points_df.iloc[i, 0], points_df.iloc[i, 1]))
 
     points_hull = graham_hull(points)
+    print(points_hull)
     draw_points(points, points_hull)
 
 
