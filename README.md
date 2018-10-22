@@ -2,8 +2,8 @@
 
 ## Advanced algorithms and data structures.
 Implemented algorithms:  
- - lab1 - Graham's algorithm
- - lab2 - X
+ - lab1 - Graham's algorithm (Python)
+ - lab2 - Huffman encoder & decoder (Java)
  - lab3 - X
  - lab4 - X
  - lab5 - X
