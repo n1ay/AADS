@@ -60,11 +60,11 @@ class HuffmanEncoder {
     }
 
     HashMap<String, String> generateCodingTable(HuffmanNode huffmanTree) {
-        HashMap<String, String> codingTable = new HashMap<>();
+        HashMap<String, String> encodingTable = new HashMap<>();
         Stack<Integer> codeStack = new Stack<>();
-        huffmanTree.traverse(codeStack, codingTable);
+        huffmanTree.traverse(codeStack, encodingTable);
 
-        return codingTable;
+        return encodingTable;
     }
 
     public List<String> extractSymbols(String text, int symbolLength) {
@@ -81,12 +81,35 @@ class HuffmanEncoder {
         return symbolList;
     }
 
-    public String encodeText(String text, HashMap<String, String> codingTable, int symbolLength) {
+    public BitSet encodeText(String text, HashMap<String, String> encodingTable, int symbolLength) {
         StringBuilder stringBuilder = new StringBuilder();
         List<String> symbolList = extractSymbols(text, symbolLength);
         for(String symbol:symbolList) {
-            stringBuilder.append(codingTable.get(symbol));
+            stringBuilder.append(encodingTable.get(symbol));
         }
-        return stringBuilder.toString();
+        char[] encodedText = stringBuilder.toString().toCharArray();
+        BitSet bitSet = new BitSet(encodedText.length);
+        for (int i = 0; i < encodedText.length; i++) {
+            if (encodedText[i] == '1')
+                bitSet.set(i);
+        }
+
+        return bitSet;
+    }
+
+    public String encodeCodingTable(HashMap<String, String> encodingTable, int symbolLength) {
+        StringBuilder encodedTable = new StringBuilder();
+        List<String> symbols = new LinkedList<>(encodingTable.keySet());
+        symbols.sort(Comparator.comparingInt(String::length));
+
+        for (String symbol: symbols) {
+            String value = encodingTable.get(symbol);
+            if (value.length() < 10)
+                encodedTable.append(symbol).append('0').append(value.length()).append(value);
+            else
+                encodedTable.append(symbol).append(value.length()).append(value);
+        }
+
+        return encodedTable.toString();
     }
 }

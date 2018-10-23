@@ -32,22 +32,22 @@ public class HuffmanNode {
         right.parent = this;
     }
 
-    public void traverse(Stack<Integer> codeStack, HashMap<String, String> codingTable) {
+    public void traverse(Stack<Integer> codeStack, HashMap<String, String> encodingTable) {
         if (symbol != null) {
             StringBuilder code = new StringBuilder();
             for(Integer i: codeStack) {
                 code.append(i);
             }
-            codingTable.put(symbol, code.toString());
+            encodingTable.put(symbol, code.toString());
         }
         if (left != null) {
             codeStack.push(0);
-            left.traverse(codeStack, codingTable);
+            left.traverse(codeStack, encodingTable);
             codeStack.pop();
         }
         if (right != null) {
             codeStack.push(1);
-            right.traverse(codeStack, codingTable);
+            right.traverse(codeStack, encodingTable);
             codeStack.pop();
         }
     }
