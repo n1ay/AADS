@@ -5,14 +5,6 @@ import java.util.HashMap;
 
 public class HuffmanDecoder {
 
-    public HashMap<String, String> invertTable (HashMap<String, String> codingTable) {
-        HashMap<String, String> invertedTable = new HashMap<>();
-        for (String key: codingTable.keySet())
-            invertedTable.put(codingTable.get(key), key);
-
-        return invertedTable;
-    }
-
     public String decodeText(BitSet encodedBits, HashMap<String, String> decodingTable) {
         StringBuilder text = new StringBuilder();
         StringBuilder code = new StringBuilder();
@@ -32,5 +24,9 @@ public class HuffmanDecoder {
         }
 
         return text.toString();
+    }
+
+    public String decodeCodingTable(BitSet codingTableBits, BitSet header) {
+        return "EMPTY BODY";
     }
 }

@@ -5,23 +5,15 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
-class HuffmanEncoder {
+import static io.github.n1ay.aads.huffman.Config.*;
 
-    public String readFile(String filename) {
-        String text = "";
-        try {
-            text = new String(Files.readAllBytes(Paths.get(filename)));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return text;
-    }
+class HuffmanEncoder {
 
     HashMap<String, Integer> calculateSymbolFrequency(String text, int symbolLength) {
         HashMap<String, Integer> symbolCounter = new HashMap<>();
 
         String symbol;
-        for (int i = 0; i < text.length(); i+=symbolLength) {
+        for (int i = 0; i < text.length(); i += symbolLength) {
             if (i + symbolLength < text.length()) {
                 symbol = text.substring(i, i + symbolLength);
             } else {
@@ -84,7 +76,7 @@ class HuffmanEncoder {
     public BitSet encodeText(String text, HashMap<String, String> encodingTable, int symbolLength) {
         StringBuilder stringBuilder = new StringBuilder();
         List<String> symbolList = extractSymbols(text, symbolLength);
-        for(String symbol:symbolList) {
+        for (String symbol : symbolList) {
             stringBuilder.append(encodingTable.get(symbol));
         }
         char[] encodedText = stringBuilder.toString().toCharArray();
@@ -97,19 +89,82 @@ class HuffmanEncoder {
         return bitSet;
     }
 
-    public String encodeCodingTable(HashMap<String, String> encodingTable, int symbolLength) {
-        StringBuilder encodedTable = new StringBuilder();
+    public BitSet encodeCodingTable(HashMap<String, String> encodingTable) {
+
         List<String> symbols = new LinkedList<>(encodingTable.keySet());
         symbols.sort(Comparator.comparingInt(String::length));
 
-        for (String symbol: symbols) {
+        List<BitSet> bitSetList = new LinkedList<>();
+
+        for (String symbol : symbols) {
             String value = encodingTable.get(symbol);
+            bitSetList.add(BitSet.valueOf(symbol.getBytes()));
             if (value.length() < 10)
-                encodedTable.append(symbol).append('0').append(value.length()).append(value);
+                bitSetList.add(BitSet.valueOf(("0" + value.length()).getBytes()));
             else
-                encodedTable.append(symbol).append(value.length()).append(value);
+                bitSetList.add(BitSet.valueOf(String.valueOf(value.length()).getBytes()));
+
+            bitSetList.add(BitSet.valueOf(value.getBytes()));
         }
 
-        return encodedTable.toString();
+        int length = 0;
+        for (BitSet bitSet : bitSetList)
+            length += bitSet.length();
+
+        BitSet codingTableBits = new BitSet(length + HEADER_LENGTH);
+
+        int index = HEADER_LENGTH;
+        for (BitSet bitSet : bitSetList) {
+            for (int i = 0; i < bitSet.length(); i++, index++) {
+                if (bitSet.get(i))
+                    codingTableBits.set(index);
+            }
+        }
+
+        return codingTableBits;
+    }
+
+    public void setHeader(BitSet codingTableBits, HashMap<String, String> codingTable, int symbolLength) {
+        int shortestSymbolLength = symbolLength;
+        for (String symbol : codingTable.keySet()) {
+            if (symbol.length() < symbolLength) {
+                shortestSymbolLength = symbol.length();
+                break;
+            }
+        }
+
+        char[] codingTableLength = Integer.toBinaryString(codingTableBits.length()).toCharArray();
+        char[] symbolLengthBinary = Integer.toBinaryString(symbolLength).toCharArray();
+        char[] shortestSymbolLengthBinary = Integer.toBinaryString(shortestSymbolLength).toCharArray();
+
+        for (int i = CODING_TABLE_LENGTH - codingTableLength.length; i < CODING_TABLE_LENGTH; i++) {
+            if (codingTableLength[i - (CODING_TABLE_LENGTH - codingTableLength.length)] == '1')
+                codingTableBits.set(i);
+        }
+
+        for (int i = SYMBOL_LENGTH - symbolLengthBinary.length + CODING_TABLE_LENGTH; i < SYMBOL_LENGTH
+                + CODING_TABLE_LENGTH; i++) {
+            if (symbolLengthBinary[i - (SYMBOL_LENGTH - symbolLengthBinary.length + CODING_TABLE_LENGTH)] == '1')
+                codingTableBits.set(i);
+        }
+
+        for (int i = SHORTEST_SYMBOL_LENGTH - shortestSymbolLengthBinary.length
+                + CODING_TABLE_LENGTH + SYMBOL_LENGTH; i < SHORTEST_SYMBOL_LENGTH
+                + SYMBOL_LENGTH + CODING_TABLE_LENGTH; i++) {
+            if (codingTableLength[i - (SHORTEST_SYMBOL_LENGTH - shortestSymbolLengthBinary.length
+                    + CODING_TABLE_LENGTH + SYMBOL_LENGTH)] == '1')
+                codingTableBits.set(i);
+        }
+    }
+
+    public byte[] createBytes(BitSet header, BitSet text) {
+        byte[] headerBytes = header.toByteArray();
+        byte[] textBytes = header.toByteArray();
+
+        byte[] bytes = new byte[headerBytes.length + textBytes.length];
+        System.arraycopy(headerBytes, 0, bytes, 0, headerBytes.length);
+        System.arraycopy(textBytes, 0, bytes, headerBytes.length, textBytes.length);
+
+        return bytes;
     }
 }
