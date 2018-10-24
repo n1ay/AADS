@@ -16,25 +16,20 @@ public class AppMain {
 
         BitSet encodedText = huffmanEncoder.encodeText(text, encodingTable, symbolLength);
         System.out.println("before: " + text.length() + ", after:  " + encodedText.length());
-//        System.out.println(encodingTable + "\n" + encodedText);
 
         BitSet encodingTableBinary = huffmanEncoder.encodeCodingTable(encodingTable);
         huffmanEncoder.setHeader(encodingTableBinary, encodingTable, symbolLength);
-        for (int i = 0; i < encodingTableBinary.length(); i++) {
-            if (encodingTableBinary.get(i))
-                System.out.print("1");
-            else
-                System.out.print("0");
-            if (i % 8 == 7)
-                System.out.println("");
-        }
-        Utils.saveBinaryFile(huffmanEncoder.createBytes(encodingTableBinary, encodedText), "xd.txt");
 
-//        String encodedTable = huffmanEncoder.encodeCodingTable(encodingTable, symbolLength);
-//        System.out.println(encodedTable);
+        Utils.printBitSet(encodedText, 0);
 
-//        HuffmanDecoder huffmanDecoder = new HuffmanDecoder();
+        byte[] bytes = huffmanEncoder.createBytes(encodingTableBinary, encodedText);
+        Utils.saveBinaryFile(bytes, "xd.txt");
+
+        HuffmanDecoder huffmanDecoder = new HuffmanDecoder();
 //        String decodedText = huffmanDecoder.decodeText(encodedText, Utils.invertMap(encodingTable));
 //        System.out.println("before: " + text + "\nafter:  " + decodedText);
+        HuffmanData data = huffmanDecoder.unpackBytes(bytes);
+        HashMap<String, String> decodingTable = huffmanDecoder.decodeCodingTable(data.getHeader());
+        System.out.println(decodingTable);
     }
 }

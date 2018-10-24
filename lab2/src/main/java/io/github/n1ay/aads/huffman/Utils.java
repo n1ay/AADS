@@ -37,4 +37,20 @@ public class Utils {
             e.printStackTrace();
         }
     }
+
+    public static void printBitSet(BitSet bitSet) {
+        printBitSet(bitSet, 0);
+    }
+
+    public static void printBitSet(BitSet bitSet, int cols) {
+        for (int i = 0; i < bitSet.length(); i++) {
+            if (bitSet.get(i))
+                System.out.print(1);
+            else
+                System.out.print(0);
+            if ((cols > 0) && (i % cols == (cols - 1)))
+                System.out.println("");
+        }
+        System.out.println("");
+    }
 }

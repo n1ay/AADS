@@ -159,7 +159,7 @@ class HuffmanEncoder {
 
     public byte[] createBytes(BitSet header, BitSet text) {
         byte[] headerBytes = header.toByteArray();
-        byte[] textBytes = header.toByteArray();
+        byte[] textBytes = text.toByteArray();
 
         byte[] bytes = new byte[headerBytes.length + textBytes.length];
         System.arraycopy(headerBytes, 0, bytes, 0, headerBytes.length);
