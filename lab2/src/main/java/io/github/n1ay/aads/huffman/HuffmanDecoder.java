@@ -1,6 +1,5 @@
 package io.github.n1ay.aads.huffman;
 
-import java.nio.charset.StandardCharsets;
 import java.util.BitSet;
 import java.util.HashMap;
 
@@ -67,24 +66,77 @@ public class HuffmanDecoder {
                 shortestSymbolBinary.append(0);
         }
 
+        HashMap<String, String> decodingTable = new HashMap<>();
+
         int symbolLength = Integer.parseInt(symbolLengthBinary.toString(), 2);
         int shortestSymbolLength = Integer.parseInt(shortestSymbolBinary.toString(), 2);
 
         StringBuilder symbol = new StringBuilder();
-        BitSet characterBits = header.get(HEADER_LENGTH, HEADER_LENGTH + 8);
-        byte[] characters = {};
+        StringBuilder prefix = new StringBuilder();
+        StringBuilder nextPrefixLengthBuilder = new StringBuilder();
+        int nextPrefixLength;
 
+        int index = HEADER_LENGTH;
         for (int i = 0; i < shortestSymbolLength; i++) {
-            characterBits = header.get(HEADER_LENGTH + i * 8, HEADER_LENGTH + (i + 1) * 8);
-            characters = characterBits.toByteArray();
+            symbol.append(Utils.readByteFromBitStream(header, index));
+            index += 8;
         }
 
-        System.out.println(new String(characters,StandardCharsets.UTF_8));
+        for (int i = 0; i < MAX_SYMBOL_LENGTH_BITS; i++) {
+                if (header.get(index))
+                    nextPrefixLengthBuilder.append(1);
+                else
+                    nextPrefixLengthBuilder.append(0);
 
-        for (int i = HEADER_LENGTH; i < header.length(); i++) {
-            System.out.print("");
+                index++;
         }
 
-        return null;
+        nextPrefixLength = Integer.parseInt(nextPrefixLengthBuilder.toString(), 2);
+
+        for (int i = 0; i < nextPrefixLength; i++) {
+            if (header.get(index))
+                prefix.append(1);
+            else
+                prefix.append(0);
+
+            index++;
+        }
+
+        decodingTable.put(prefix.toString(), symbol.toString());
+
+        while (index < header.length()) {
+            symbol.setLength(0);
+            nextPrefixLengthBuilder.setLength(0);
+            prefix.setLength(0);
+
+            for (int i = 0; i < symbolLength; i++) {
+                symbol.append(Utils.readByteFromBitStream(header, index));
+                index += 8;
+            }
+
+            for (int i = 0; i < MAX_SYMBOL_LENGTH_BITS; i++) {
+                if (header.get(index))
+                    nextPrefixLengthBuilder.append(1);
+                else
+                    nextPrefixLengthBuilder.append(0);
+
+                index++;
+            }
+
+            nextPrefixLength = Integer.parseInt(nextPrefixLengthBuilder.toString(), 2);
+
+            for (int i = 0; i < nextPrefixLength; i++) {
+                if (header.get(index))
+                    prefix.append(1);
+                else
+                    prefix.append(0);
+
+                index++;
+            }
+
+            decodingTable.put(prefix.toString(), symbol.toString());
+        }
+
+        return decodingTable;
     }
 }

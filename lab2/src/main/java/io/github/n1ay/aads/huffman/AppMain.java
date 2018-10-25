@@ -7,6 +7,8 @@ import java.util.stream.Stream;
 public class AppMain {
     public static void main(String[] args) {
         final int symbolLength = 2;
+
+        //encode phase
         HuffmanEncoder huffmanEncoder = new HuffmanEncoder();
 //        String text = Utils.readFile("seneca.txt");
         String text = "abababcacaweweweweweweweddfghythhgj";
@@ -15,21 +17,27 @@ public class AppMain {
         HashMap<String, String> encodingTable = huffmanEncoder.generateCodingTable(huffmanTree);
 
         BitSet encodedText = huffmanEncoder.encodeText(text, encodingTable, symbolLength);
-        System.out.println("before: " + text.length() + ", after:  " + encodedText.length());
+//        System.out.println("before: " + text.length() + ", after:  " + encodedText.length());
 
         BitSet encodingTableBinary = huffmanEncoder.encodeCodingTable(encodingTable);
         huffmanEncoder.setHeader(encodingTableBinary, encodingTable, symbolLength);
 
-        Utils.printBitSet(encodedText, 0);
+//        Utils.printBitSet(encodedText, 0);
 
         byte[] bytes = huffmanEncoder.createBytes(encodingTableBinary, encodedText);
-        Utils.saveBinaryFile(bytes, "xd.txt");
+        Utils.saveBinaryFile(bytes, "seneca-huff.txt");
 
-        HuffmanDecoder huffmanDecoder = new HuffmanDecoder();
 //        String decodedText = huffmanDecoder.decodeText(encodedText, Utils.invertMap(encodingTable));
 //        System.out.println("before: " + text + "\nafter:  " + decodedText);
-        HuffmanData data = huffmanDecoder.unpackBytes(bytes);
-        HashMap<String, String> decodingTable = huffmanDecoder.decodeCodingTable(data.getHeader());
-        System.out.println(decodingTable);
+
+
+        //decode phase
+        HuffmanDecoder huffmanDecoder = new HuffmanDecoder();
+        byte[] encodedBytes = Utils.readBinaryFile("seneca-huff.txt");
+        HuffmanData huffmanData = huffmanDecoder.unpackBytes(encodedBytes);
+        HashMap<String, String> decodingTable = huffmanDecoder.decodeCodingTable(huffmanData.getHeader());
+        String decodedText = huffmanDecoder.decodeText(huffmanData.getContent(), decodingTable);
+        Utils.saveFile("seneca2.txt", decodedText);
+
     }
 }

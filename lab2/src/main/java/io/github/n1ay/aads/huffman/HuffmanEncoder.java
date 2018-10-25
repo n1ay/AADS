@@ -93,30 +93,47 @@ class HuffmanEncoder {
 
         List<String> symbols = new LinkedList<>(encodingTable.keySet());
         symbols.sort(Comparator.comparingInt(String::length));
-
+        List<Integer> lengthsList = new ArrayList<>();
         List<BitSet> bitSetList = new LinkedList<>();
-
         for (String symbol : symbols) {
             String value = encodingTable.get(symbol);
             bitSetList.add(BitSet.valueOf(symbol.getBytes()));
-            if (value.length() < 10)
-                bitSetList.add(BitSet.valueOf(("0" + value.length()).getBytes()));
-            else
-                bitSetList.add(BitSet.valueOf(String.valueOf(value.length()).getBytes()));
 
-            bitSetList.add(BitSet.valueOf(value.getBytes()));
+            lengthsList.add(value.length());
+            char[] binaryValueLength = Integer.toBinaryString(value.length()).toCharArray();
+            BitSet valueLengthBits = new BitSet(MAX_SYMBOL_LENGTH_BITS);
+            for (int i = 0; i < MAX_SYMBOL_LENGTH_BITS; i++) {
+                if (MAX_SYMBOL_LENGTH_BITS - i <= binaryValueLength.length &&
+                        binaryValueLength[i - MAX_SYMBOL_LENGTH_BITS + binaryValueLength.length] == '1')
+                    valueLengthBits.set(i);
+            }
+
+            bitSetList.add(valueLengthBits);
+
+            BitSet valueBits = new BitSet(value.length());
+            for (int i = 0; i < value.length(); i++) {
+                if (value.toCharArray()[i] == '1')
+                    valueBits.set(i);
+            }
+
+            bitSetList.add(valueBits);
         }
-
-        int length = 0;
-        for (BitSet bitSet : bitSetList)
-            length += bitSet.length();
-
-        BitSet codingTableBits = new BitSet(length + HEADER_LENGTH);
+        BitSet codingTableBits = new BitSet(HEADER_LENGTH);
 
         int index = HEADER_LENGTH;
-        for (BitSet bitSet : bitSetList) {
-            for (int i = 0; i < bitSet.length(); i++, index++) {
-                if (bitSet.get(i))
+        for (int i = 0; i < bitSetList.size(); i++) {
+            int bitSetLength;
+            if (i % 3 == 0) {
+                int currentLength = bitSetList.get(i).length();
+                bitSetLength = currentLength % 8 == 0 ? currentLength : (currentLength / 8 + 1) * 8;
+            }
+            else if (i % 3 == 1) {
+                bitSetLength = 8;
+            } else {
+                bitSetLength = lengthsList.get(i/3);
+            }
+            for (int j = 0; j < bitSetLength; j++, index++) {
+                if (bitSetList.get(i).get(j))
                     codingTableBits.set(index);
             }
         }

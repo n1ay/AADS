@@ -1,12 +1,13 @@
 package io.github.n1ay.aads.huffman;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.BitSet;
 import java.util.HashMap;
+
+import static io.github.n1ay.aads.huffman.Config.HEADER_LENGTH;
 
 public class Utils {
     public static String readFile(String filename) {
@@ -52,5 +53,37 @@ public class Utils {
                 System.out.println("");
         }
         System.out.println("");
+    }
+
+    public static String readByteFromBitStream(BitSet bitStream, int position) {
+        byte[] characters;
+        BitSet characterBits = bitStream.get(position, position + 8);
+        characters = characterBits.toByteArray();
+        return new String(characters, StandardCharsets.UTF_8);
+    }
+
+    public static byte[] readBinaryFile (String filename) {
+        byte[] bytes = null;
+        try {
+            FileInputStream fis = new FileInputStream(filename);
+            long fileSize = (new File(filename)).length();
+            bytes = new byte[(int) fileSize];
+            fis.read(bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return bytes;
+    }
+
+    public static void saveFile(String filename, String text) {
+        try {
+            PrintWriter out = new PrintWriter(filename);
+            out.print(text);
+            out.flush();
+            out.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 }
