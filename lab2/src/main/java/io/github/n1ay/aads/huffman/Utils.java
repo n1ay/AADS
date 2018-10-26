@@ -28,62 +28,46 @@ public class Utils {
         return invertedTable;
     }
 
-    public static void saveBinaryFile (byte[] bytes, String filename) {
-        try {
-            FileOutputStream fos = new FileOutputStream(filename);
-            fos.write(bytes, 0, bytes.length);
-            fos.flush();
-            fos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void printBitSet(BitSet bitSet) {
-        printBitSet(bitSet, 0);
-    }
-
-    public static void printBitSet(BitSet bitSet, int cols) {
-        for (int i = 0; i < bitSet.length(); i++) {
-            if (bitSet.get(i))
-                System.out.print(1);
-            else
-                System.out.print(0);
-            if ((cols > 0) && (i % cols == (cols - 1)))
-                System.out.println("");
-        }
-        System.out.println("");
-    }
-
-    public static String readByteFromBitStream(BitSet bitStream, int position) {
-        byte[] characters;
-        BitSet characterBits = bitStream.get(position, position + 8);
-        characters = characterBits.toByteArray();
-        return new String(characters, StandardCharsets.UTF_8);
-    }
-
-    public static byte[] readBinaryFile (String filename) {
-        byte[] bytes = null;
-        try {
-            FileInputStream fis = new FileInputStream(filename);
-            long fileSize = (new File(filename)).length();
-            bytes = new byte[(int) fileSize];
-            fis.read(bytes);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return bytes;
-    }
-
     public static void saveFile(String filename, String text) {
         try {
             PrintWriter out = new PrintWriter(filename);
             out.print(text);
             out.flush();
             out.close();
+
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    public static String runCommand(String cmd) {
+        try {
+            Process process = Runtime.getRuntime().exec(cmd);
+            BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            StringBuilder out = new StringBuilder();
+            String s;
+            while ((s = stdInput.readLine()) != null) {
+                out.append(s);
+            }
+
+            return out.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return "";
+    }
+
+    public static int getFileLength(String filename) {
+        return Integer.parseInt(Utils.runCommand("./binop.sh ls " + filename));
+    }
+
+    public static void saveStringInBinaryForm() {
+        runCommand("./binop.sh save ");
+    }
+
+    public static String readBinaryFileToString() {
+        runCommand("./binop.sh read");
+        return readFile("bin.txt");
     }
 }
