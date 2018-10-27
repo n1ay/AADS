@@ -26,7 +26,7 @@ public class BitUtils {
 
     public static void setBit(List<Byte> byteList, int index) {
         int bitNumber = index % 8;
-        byteList.add(index / 8, (byte) (byteList.get(index / 8) | (1 << bitNumber)));
+        byteList.set(index / 8, (byte) (byteList.get(index / 8) | (1 << bitNumber)));
     }
 
     public static void unsetBit(List<Byte> byteList, int index) {
@@ -37,7 +37,7 @@ public class BitUtils {
                 setByte |= byteList.get(index / 8) & (1 << i);
             }
         }
-        byteList.add(index / 8, setByte);
+        byteList.set(index / 8, setByte);
     }
 
     public static boolean getBit(List<Byte> byteList, int index) {

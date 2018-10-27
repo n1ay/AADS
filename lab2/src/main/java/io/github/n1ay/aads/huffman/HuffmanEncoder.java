@@ -1,6 +1,9 @@
 package io.github.n1ay.aads.huffman;
 
+import java.nio.ByteBuffer;
 import java.util.*;
+
+import static io.github.n1ay.aads.huffman.Config.*;
 
 public class HuffmanEncoder {
 
@@ -88,18 +91,99 @@ public class HuffmanEncoder {
         return bytes;
     }
 
-    public static byte[] encodeCodingTable(HashMap<String, String> encodingTable) {
-        return null;
-    }
+    public static byte[] encodeCodingTable(HashMap<String, String> encodingTable, int symbolCount) {
+        List<String> symbols = new ArrayList<>(encodingTable.keySet());
+        symbols.sort(Comparator.comparingInt(String::length));
 
-    public static byte[] createBytes(BitSet header, BitSet text) {
-        byte[] headerBytes = header.toByteArray();
-        byte[] textBytes = text.toByteArray();
+        int codingTableLengthBits = HEADER_LENGTH;
+        for (String s : encodingTable.keySet()) {
+            codingTableLengthBits += s.length() * 8;
+            codingTableLengthBits += 8;
+            codingTableLengthBits += encodingTable.get(s).length();
+        }
+        int sizeBytes = codingTableLengthBits / 8 + (((codingTableLengthBits % 8) == 0) ? 0 : 1);
+        List<Byte> codingTableBytes = new ArrayList<>(sizeBytes);
+        for (int i = 0; i < sizeBytes; i++) {
+            codingTableBytes.add((byte) 0);
+        }
 
-        byte[] bytes = new byte[headerBytes.length + textBytes.length];
-        System.arraycopy(headerBytes, 0, bytes, 0, headerBytes.length);
-        System.arraycopy(textBytes, 0, bytes, headerBytes.length, textBytes.length);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(4);
+        byteBuffer.putInt(codingTableLengthBits - HEADER_LENGTH);
+        byte[] bytes = byteBuffer.array();
+        int index = 0;
 
-        return bytes;
+        for (int i = 0; i < CODING_TABLE_LENGTH; i++) {
+            if (BitUtils.getBit(bytes, i))
+                BitUtils.setBit(codingTableBytes, index);
+
+            index++;
+        }
+
+        index = CODING_TABLE_LENGTH;
+
+        byteBuffer.clear();
+        byteBuffer.putInt(symbolCount);
+        bytes = byteBuffer.array();
+        for (int i = 0; i < SYMBOL_COUNT_LENGTH; i++) {
+            if (BitUtils.getBit(bytes, i)) {
+                BitUtils.setBit(codingTableBytes, index);
+            }
+
+            index++;
+        }
+
+        index = CODING_TABLE_LENGTH + SYMBOL_COUNT_LENGTH;
+
+        bytes = new byte[]{(byte) symbols.get(symbols.size()-1).length()};
+        for (int i = 0; i < SYMBOL_LENGTH; i++) {
+            if (BitUtils.getBit(bytes, i)) {
+                BitUtils.setBit(codingTableBytes, index);
+            }
+
+            index++;
+        }
+
+        index = CODING_TABLE_LENGTH + SYMBOL_COUNT_LENGTH + SYMBOL_LENGTH;
+
+        bytes = new byte[]{(byte) symbols.get(0).length()};
+        for (int i = 0; i < SHORTEST_SYMBOL_LENGTH; i++) {
+            if (BitUtils.getBit(bytes, i)) {
+                BitUtils.setBit(codingTableBytes, index);
+            }
+
+            index++;
+        }
+
+
+        for (String symbol : symbols) {
+            byte[] currentSymbol = symbol.getBytes();
+            for (byte ignored : currentSymbol) {
+                for (int k = 0; k < 8; k++) {
+                    if (BitUtils.getBit(currentSymbol, k))
+                        BitUtils.setBit(codingTableBytes, index);
+
+                    index++;
+                }
+            }
+
+            String currentCode = encodingTable.get(symbol);
+            int currentCodeLength = currentCode.length();
+            byte[] currentCodeLengthBytes = {(byte) currentCodeLength};
+            for (int k = 0; k < 8; k++) {
+                if (BitUtils.getBit(currentCodeLengthBytes, k))
+                    BitUtils.setBit(codingTableBytes, index);
+
+                index++;
+            }
+
+            for (int k = 0; k < currentCodeLength; k++) {
+                if (currentCode.charAt(k) == '1')
+                    BitUtils.setBit(codingTableBytes, index);
+
+                index++;
+            }
+        }
+
+        return Utils.toPrimitive(codingTableBytes.toArray(new Byte[0]));
     }
 }

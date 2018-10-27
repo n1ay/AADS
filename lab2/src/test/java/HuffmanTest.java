@@ -1,13 +1,23 @@
-import io.github.n1ay.aads.huffman.HuffmanDecoder;
-import io.github.n1ay.aads.huffman.HuffmanEncoder;
-import io.github.n1ay.aads.huffman.HuffmanNode;
-import io.github.n1ay.aads.huffman.Utils;
+import io.github.n1ay.aads.huffman.*;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class HuffmanTest {
+
+    @Test
+    public void encodingTableTest() {
+        HashMap<String, String> encodingTable = new HashMap<>();
+        encodingTable.put("a", "00");
+        encodingTable.put("as", "11");
+        encodingTable.put("sa", "01");
+        encodingTable.put("aa", "10");
+
+        byte[] encodedTable = HuffmanEncoder.encodeCodingTable(encodingTable, 255);
+        Utils.printByteArray(encodedTable);
+    }
 
     //@Test
     public void decodeEncodeTextTest() {

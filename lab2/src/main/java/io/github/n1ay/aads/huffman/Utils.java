@@ -71,8 +71,49 @@ public class Utils {
         return result;
     }
 
+    public static byte[] toPrimitive(Byte[] bytes) {
+        byte[] result = new byte[bytes.length];
+        for (int i = 0; i < bytes.length; i++) {
+            byte b = bytes[i];
+            result[i] = b;
+        }
+
+        return result;
+    }
+
+    public static byte[] packBytes(Byte[] headerBytes, Byte[] textBytes) {
+
+        byte[] bytes = new byte[headerBytes.length + textBytes.length];
+        System.arraycopy(headerBytes, 0, bytes, 0, headerBytes.length);
+        System.arraycopy(textBytes, 0, bytes, headerBytes.length, textBytes.length);
+
+        return bytes;
+    }
+
+    public static byte[] packBytes(byte[] headerBytes, byte[] textBytes) {
+
+        byte[] bytes = new byte[headerBytes.length + textBytes.length];
+        System.arraycopy(headerBytes, 0, bytes, 0, headerBytes.length);
+        System.arraycopy(textBytes, 0, bytes, headerBytes.length, textBytes.length);
+
+        return bytes;
+    }
+
     public static void printBitSet(BitSet bitSet) {
         printBitSet(bitSet, 0);
+    }
+
+    public static void printByteArray(byte[] byteArray) {
+        for (int i = 0; i < byteArray.length * 8; i++) {
+            if (BitUtils.getBit(byteArray, i)) {
+                System.out.print("1");
+            } else
+                System.out.print("0");
+
+            if (i % 8 == 7)
+                System.out.println("");
+        }
+        System.out.println("");
     }
 
     public static void printBitSet(BitSet bitSet, int cols) {

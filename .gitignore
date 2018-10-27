@@ -1,5 +1,6 @@
 #IDE files
 .idea/
+*.iml
 
 #.pyc files
 *.pyc
@@ -8,3 +9,4 @@
 target/
 
 #articles, lectures, etc
+articles/
