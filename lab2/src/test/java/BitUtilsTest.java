@@ -3,6 +3,7 @@ import io.github.n1ay.aads.huffman.Utils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.ThrowingSupplier;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,8 +15,8 @@ public class BitUtilsTest {
     public void getSetBitArrayTest() throws Exception {
         String textLower = "abcabc";
         String textUpper = "ABCABC";
-        byte[] textLowerBytes = textLower.getBytes();
-        byte[] textUpperBytes = textUpper.getBytes();
+        byte[] textLowerBytes = textLower.getBytes(StandardCharsets.US_ASCII);
+        byte[] textUpperBytes = textUpper.getBytes(StandardCharsets.US_ASCII);
 
         if (!BitUtils.getBit(textUpperBytes, 13))
             BitUtils.setBit(textUpperBytes, 13);
@@ -37,8 +38,8 @@ public class BitUtilsTest {
     public void getSetBitListTest() throws Exception {
         String textLower = "abcabc";
         String textUpper = "ABCABC";
-        List<Byte> textLowerBytes = new ArrayList<>(Arrays.asList(Utils.toObject(textLower.getBytes())));
-        List<Byte> textUpperBytes = new ArrayList<>(Arrays.asList(Utils.toObject(textUpper.getBytes())));
+        List<Byte> textLowerBytes = new ArrayList<>(Arrays.asList(Utils.toObject(textLower.getBytes(StandardCharsets.US_ASCII))));
+        List<Byte> textUpperBytes = new ArrayList<>(Arrays.asList(Utils.toObject(textUpper.getBytes(StandardCharsets.US_ASCII))));
 
         if (!BitUtils.getBit(textUpperBytes, 13))
             BitUtils.setBit(textUpperBytes, 13);

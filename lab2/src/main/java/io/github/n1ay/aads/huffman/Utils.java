@@ -109,7 +109,7 @@ public class Utils {
         ByteBuffer byteBuffer = ByteBuffer.wrap(headerLengthBytes);
         int headerLength = byteBuffer.getInt();
 
-        byte[] header = new byte [headerLength / 8];
+        byte[] header = new byte[headerLength / 8 + ((headerLength % 8 == 0) ? 0 : 1)];
         byte[] data = new byte[bytes.length - header.length];
         System.arraycopy(bytes, 0, header, 0, header.length);
         System.arraycopy(bytes, header.length, data, 0, data.length);

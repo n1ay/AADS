@@ -6,4 +6,6 @@ public class Config {
     public static final int SYMBOL_LENGTH = 8;
     public static final int SHORTEST_SYMBOL_LENGTH = 8;
     public static final int HEADER_LENGTH = CODING_TABLE_LENGTH + SYMBOL_COUNT_LENGTH + SYMBOL_LENGTH + SHORTEST_SYMBOL_LENGTH;
+
+    public static final String TXT_DIR = "txt/";
 }

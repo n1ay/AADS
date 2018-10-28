@@ -74,7 +74,7 @@ public class HuffmanDecoder {
         HashMap<String, String> decodingTable = new HashMap<>();
         StringBuilder symbol = new StringBuilder();
         byte[] symbolBytes = new byte[tableInfo.getShortestSymbolLength()];
-
+        byte[] prefixLength = new byte[1];
         int index = 0;
         for (int i = 0; i < tableInfo.getShortestSymbolLength() * 8; i++) {
             if (BitUtils.getBit(tableInfo.getDecodingTableBytes(), index))
