@@ -1,6 +1,7 @@
 import io.github.n1ay.aads.huffman.*;
 import org.junit.jupiter.api.Test;
 
+import java.nio.ByteBuffer;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -8,15 +9,17 @@ import static org.junit.jupiter.api.Assertions.*;
 public class HuffmanTest {
 
     @Test
-    public void encodingTableTest() {
+    public void test() {
         HashMap<String, String> encodingTable = new HashMap<>();
         encodingTable.put("a", "00");
         encodingTable.put("as", "11");
         encodingTable.put("sa", "01");
         encodingTable.put("aa", "10");
+        int symbolCount = 11;
+        byte[] encodedTable = HuffmanEncoder.encodeCodingTable(encodingTable, symbolCount);
 
-        byte[] encodedTable = HuffmanEncoder.encodeCodingTable(encodingTable, 255);
-        Utils.printByteArray(encodedTable);
+        DecodingTableInfo info = HuffmanDecoder.extractHeaderInfo(encodedTable);
+        HuffmanDecoder.decodeTable(info);
     }
 
     //@Test

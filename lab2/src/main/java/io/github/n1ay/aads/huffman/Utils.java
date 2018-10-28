@@ -1,10 +1,13 @@
 package io.github.n1ay.aads.huffman;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.BitSet;
 import java.util.HashMap;
+
+import static io.github.n1ay.aads.huffman.Config.CODING_TABLE_LENGTH;
 
 public class Utils {
     public static String readFile(String filename) {
@@ -97,6 +100,21 @@ public class Utils {
         System.arraycopy(textBytes, 0, bytes, headerBytes.length, textBytes.length);
 
         return bytes;
+    }
+
+    public static HuffmanData unpackBytes(byte[] bytes) {
+        byte[] headerLengthBytes = new byte[CODING_TABLE_LENGTH / 8];
+        System.arraycopy(bytes, 0, headerLengthBytes, 0, 4);
+
+        ByteBuffer byteBuffer = ByteBuffer.wrap(headerLengthBytes);
+        int headerLength = byteBuffer.getInt();
+
+        byte[] header = new byte [headerLength / 8];
+        byte[] data = new byte[bytes.length - header.length];
+        System.arraycopy(bytes, 0, header, 0, header.length);
+        System.arraycopy(bytes, header.length, data, 0, data.length);
+
+        return new HuffmanData(header, data);
     }
 
     public static void printBitSet(BitSet bitSet) {

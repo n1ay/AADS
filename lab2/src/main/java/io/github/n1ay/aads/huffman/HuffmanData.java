@@ -1,29 +1,27 @@
 package io.github.n1ay.aads.huffman;
 
-import java.util.BitSet;
-
 public class HuffmanData {
-    private BitSet header;
-    private BitSet content;
+    private byte[] header;
+    private byte[] content;
 
-    public HuffmanData(BitSet header, BitSet content) {
+    public HuffmanData(byte[] header, byte[] content) {
         this.header = header;
         this.content = content;
     }
 
-    public BitSet getHeader() {
+    public byte[] getHeader() {
         return header;
     }
 
-    public void setHeader(BitSet header) {
+    public void setHeader(byte[] header) {
         this.header = header;
     }
 
-    public BitSet getContent() {
+    public byte[] getContent() {
         return content;
     }
 
-    public void setContent(BitSet content) {
+    public void setContent(byte[] content) {
         this.content = content;
     }
 }

@@ -107,8 +107,8 @@ public class HuffmanEncoder {
             codingTableBytes.add((byte) 0);
         }
 
-        ByteBuffer byteBuffer = ByteBuffer.allocate(4);
-        byteBuffer.putInt(codingTableLengthBits - HEADER_LENGTH);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(CODING_TABLE_LENGTH / 8);
+        byteBuffer.putInt(codingTableLengthBits);
         byte[] bytes = byteBuffer.array();
         int index = 0;
 
