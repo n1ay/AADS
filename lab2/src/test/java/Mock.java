@@ -23,7 +23,7 @@ public class Mock {
     public static List<byte[]> mockTexts() {
         List<byte[]> texts = new ArrayList<>();
         for (String s: testFilenames) {
-            texts.add(Utils.readFile(TXT_DIR + s).getBytes(StandardCharsets.US_ASCII));
+            texts.add(Utils.readBinaryFile(TXT_DIR + s));
         }
 
         return texts;

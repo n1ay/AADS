@@ -1,25 +1,21 @@
 <project>
 
     <target name="clean">
-        <delete dir="build"/>
+        <delete verbose="true" dir="target"/>
     </target>
 
     <target name="compile">
-        <mkdir dir="build/classes"/>
-        <javac srcdir="src" destdir="build/classes"/>
+        <mkdir dir="target/classes"/>
+        <javac includeantruntime="false" verbose="true" srcdir="src/main/java" destdir="target/classes"/>
     </target>
 
-    <target name="jar">
-        <mkdir dir="build/jar"/>
-        <jar destfile="build/jar/HelloWorld.jar" basedir="build/classes">
-            <manifest>
-                <attribute name="Main-Class" value="oata.HelloWorld"/>
-            </manifest>
-        </jar>
-    </target>
-
-    <target name="run">
-        <java jar="build/jar/HelloWorld.jar" fork="true"/>
+    <target name="run" depends="compile">
+        <java classpath="target/classes" classname="io.github.n1ay.aads.huffman.AppMain"
+              fork="yes" >
+            <arg value="${0}"/>
+            <arg value="${1}"/>
+            <arg value="${2}"/>
+        </java>
     </target>
 
 </project>

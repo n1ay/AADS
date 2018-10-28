@@ -2,8 +2,6 @@ package io.github.n1ay.aads.huffman;
 
 import java.io.*;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -12,15 +10,6 @@ import java.util.List;
 import static io.github.n1ay.aads.huffman.Config.CODING_TABLE_LENGTH;
 
 public class Utils {
-    public static String readFile(String filename) {
-        String text = "";
-        try {
-            text = new String(Files.readAllBytes(Paths.get(filename)));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return text;
-    }
 
     public static <V, K> HashMap<V, K> invertMap(HashMap<K, V> codingTable) {
         HashMap<V, K> invertedTable = new HashMap<>();
@@ -28,17 +17,6 @@ public class Utils {
             invertedTable.put(codingTable.get(key), key);
 
         return invertedTable;
-    }
-
-    public static void saveFile(String filename, String text) {
-        try {
-            PrintWriter out = new PrintWriter(filename);
-            out.print(text);
-            out.flush();
-            out.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
     }
 
     public static void saveBinaryFile(String filename, byte[] bytes) {

@@ -1,3 +1,5 @@
+import difflib.DiffUtils;
+import difflib.Patch;
 import io.github.n1ay.aads.huffman.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -5,10 +7,42 @@ import org.junit.jupiter.api.function.Executable;
 import java.io.File;
 import java.util.*;
 
+import static io.github.n1ay.aads.huffman.Config.TXT_DIR;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class HuffmanTest {
+
+    @Test
+    public void endToEndTest() throws Exception {
+
+        int equalsCounter = 0;
+        int maxSymbolLength = 5;
+        List<byte[]> texts = Mock.mockTexts();
+        String filename = new Date() + ".tmp";
+
+        for (int symbolLength = 1; symbolLength <= maxSymbolLength; symbolLength++) {
+            for (int i = 0; i < texts.size(); i++) {
+                byte[] compressedText = HuffmanEncoder.compress(texts.get(i), symbolLength);
+                Utils.saveBinaryFile(filename, compressedText);
+
+                byte[] loadedCompressedText = Utils.readBinaryFile(filename);
+                byte[] decodedText = HuffmanDecoder.decompress(loadedCompressedText);
+                Utils.saveBinaryFile(filename, decodedText);
+
+                List<String> original = Utils.fileToLines(TXT_DIR + Mock.testFilenames.get(i));
+                List<String> afterCompressionDecompression = Utils.fileToLines(filename);
+                Patch patch = DiffUtils.diff(original, afterCompressionDecompression);
+                if (patch.getDeltas().size() == 0)
+                    equalsCounter++;
+            }
+        }
+        File file = new File(filename);
+        if(!file.delete())
+            throw new Exception("Cannot delete file " + filename);
+
+        assertEquals(equalsCounter, maxSymbolLength * texts.size());
+    }
 
     @Test
     public void saveLoadFileTest() throws Exception {
