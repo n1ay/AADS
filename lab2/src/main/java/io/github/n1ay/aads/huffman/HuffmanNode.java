@@ -1,17 +1,19 @@
 package io.github.n1ay.aads.huffman;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Stack;
 
 public class HuffmanNode {
     private HuffmanNode parent;
     private HuffmanNode left;
     private HuffmanNode right;
-    private String symbol;
+    private List<Byte> symbol;
     private int symbolCount;
     private int childrenSymbolCount;
 
-    HuffmanNode(String symbol, int symbolCount) {
+    HuffmanNode(List<Byte> symbol, int symbolCount) {
         this.symbol = symbol;
         this.symbolCount = symbolCount;
         this.childrenSymbolCount = 0;
@@ -32,7 +34,7 @@ public class HuffmanNode {
         right.parent = this;
     }
 
-    public void traverse(Stack<Integer> codeStack, HashMap<String, String> encodingTable) {
+    public void traverse(Stack<Integer> codeStack, HashMap<List<Byte>, String> encodingTable) {
         if (symbol != null) {
             StringBuilder code = new StringBuilder();
             for(Integer i: codeStack) {
@@ -83,11 +85,11 @@ public class HuffmanNode {
         this.right = right;
     }
 
-    public String getSymbol() {
+    public List<Byte> getSymbol() {
         return symbol;
     }
 
-    public void setSymbol(String symbol) {
+    public void setSymbol(List<Byte> symbol) {
         this.symbol = symbol;
     }
 

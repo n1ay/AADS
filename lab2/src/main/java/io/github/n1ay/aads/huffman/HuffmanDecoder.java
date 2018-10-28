@@ -1,17 +1,16 @@
 package io.github.n1ay.aads.huffman;
 
 import java.nio.ByteBuffer;
-import java.util.BitSet;
-import java.util.HashMap;
+import java.util.*;
 
 import static io.github.n1ay.aads.huffman.Config.*;
 
 public class HuffmanDecoder {
 
-    public static String decodeText(byte[] encodedText, HashMap<String, String> decodingTable, int symbols) {
-        StringBuilder text = new StringBuilder();
+    public static byte[] decodeText(byte[] encodedText, HashMap<String, List<Byte>> decodingTable, int symbols) {
+        List<Byte> text = new ArrayList<>();
         StringBuilder code = new StringBuilder();
-        String symbol;
+        List<Byte> symbol;
         int symbolCount = 0;
         BitSet encodedBits = BitSet.valueOf(encodedText);
 
@@ -24,13 +23,13 @@ public class HuffmanDecoder {
 
             symbol = decodingTable.get(code.toString());
             if (symbol != null) {
-                text.append(symbol);
+                Utils.appendBytes(text, Utils.toPrimitive(symbol.toArray(new Byte[]{})));
                 code.setLength(0);
                 symbolCount++;
             }
         }
 
-        return text.toString();
+        return Utils.toPrimitive(text.toArray(new Byte[]{}));
     }
 
     public static DecodingTableInfo extractHeaderInfo(byte[] header) {
@@ -70,13 +69,14 @@ public class HuffmanDecoder {
         return new DecodingTableInfo(content, headerLength, symbolCount, symbolLength, shortestSymbolLength);
     }
 
-    public static HashMap<String, String> decodeTable(DecodingTableInfo tableInfo) {
-        HashMap<String, String> decodingTable = new HashMap<>();
+    public static HashMap<String, List<Byte>> decodeTable(DecodingTableInfo tableInfo) {
+        HashMap<String, List<Byte>> decodingTable = new HashMap<>();
         byte[] tableBytes = tableInfo.getDecodingTableBytes();
-        StringBuilder symbolBuilder = new StringBuilder();
         byte[] symbolBytes = new byte[1];
         byte[] prefixLengthBytes = new byte[1];
         StringBuilder prefixBuilder = new StringBuilder();
+
+        byte[] symbol = new byte[tableInfo.getShortestSymbolLength()];
 
         int index = 0;
         for (int i = 0; i < tableInfo.getShortestSymbolLength(); i++) {
@@ -84,7 +84,7 @@ public class HuffmanDecoder {
                 if (BitUtils.getBit(tableBytes, index))
                     BitUtils.setBit(symbolBytes, j);
             }
-            symbolBuilder.append(new String(symbolBytes));
+            symbol[i] = symbolBytes[0];
             symbolBytes[0] = 0;
         }
 
@@ -102,9 +102,9 @@ public class HuffmanDecoder {
                 prefixBuilder.append(0);
         }
 
-        decodingTable.put(prefixBuilder.toString(), symbolBuilder.toString());
+        decodingTable.put(prefixBuilder.toString(), Arrays.asList(Utils.toObject(symbol)));
         prefixBuilder.setLength(0);
-        symbolBuilder.setLength(0);
+        symbol = new byte[tableInfo.getSymbolLength()];
         prefixLengthBytes[0] = 0;
         symbolBytes[0] = 0;
 
@@ -115,7 +115,7 @@ public class HuffmanDecoder {
                     if (BitUtils.getBit(tableBytes, index))
                         BitUtils.setBit(symbolBytes, j);
                 }
-                symbolBuilder.append(new String(symbolBytes));
+                symbol[i] = symbolBytes[0];
                 symbolBytes[0] = 0;
             }
 
@@ -133,13 +133,20 @@ public class HuffmanDecoder {
                     prefixBuilder.append(0);
             }
 
-            decodingTable.put(prefixBuilder.toString(), symbolBuilder.toString());
+            decodingTable.put(prefixBuilder.toString(), Arrays.asList(Utils.toObject(symbol)));
             prefixBuilder.setLength(0);
-            symbolBuilder.setLength(0);
+            symbol = new byte[tableInfo.getSymbolLength()];
             prefixLengthBytes[0] = 0;
             symbolBytes[0] = 0;
         }
 
         return decodingTable;
+    }
+
+    public static byte[] decompress(byte[] compressed) {
+        HuffmanData huffmanData = Utils.unpackBytes(compressed);
+        DecodingTableInfo tableInfo = extractHeaderInfo(huffmanData.getHeader());
+        HashMap<String, List<Byte>> decodingTable = decodeTable(tableInfo);
+        return decodeText(huffmanData.getContent(), decodingTable, tableInfo.getSymbolCount());
     }
 }

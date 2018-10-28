@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.BitSet;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 import static io.github.n1ay.aads.huffman.Config.CODING_TABLE_LENGTH;
 
@@ -20,9 +22,9 @@ public class Utils {
         return text;
     }
 
-    public static HashMap<String, String> invertMap(HashMap<String, String> codingTable) {
-        HashMap<String, String> invertedTable = new HashMap<>();
-        for (String key : codingTable.keySet())
+    public static <V, K> HashMap<V, K> invertMap(HashMap<K, V> codingTable) {
+        HashMap<V, K> invertedTable = new HashMap<>();
+        for (K key : codingTable.keySet())
             invertedTable.put(codingTable.get(key), key);
 
         return invertedTable;
@@ -39,7 +41,7 @@ public class Utils {
         }
     }
 
-    public static void saveBinaryFile(byte[] bytes, String filename) {
+    public static void saveBinaryFile(String filename, byte[] bytes) {
         try {
             FileOutputStream fos = new FileOutputStream(filename);
             fos.write(bytes, 0, bytes.length);
@@ -144,5 +146,45 @@ public class Utils {
                 System.out.println("");
         }
         System.out.println("");
+    }
+
+    public static byte[] getBytes(byte[] byteArray, int index) {
+        byte[] result = new byte[byteArray.length - index];
+        System.arraycopy(byteArray, index, result, 0, result.length);
+        return result;
+    }
+
+    public static byte[] getBytes(byte[] byteArray, int index, int count) {
+        byte[] result = new byte[count];
+        System.arraycopy(byteArray, index, result, 0, count);
+        return result;
+    }
+
+    public static void appendBytes(List<Byte> byteList, byte[] byteArray) {
+        for (byte aByteArray : byteArray) {
+            byteList.add(aByteArray);
+        }
+    }
+
+    public static void wait(int ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static List<String> fileToLines(String filename) {
+        List<String> lines = new LinkedList<String>();
+        String line = "";
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(filename));
+            while ((line = in.readLine()) != null) {
+                lines.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return lines;
     }
 }

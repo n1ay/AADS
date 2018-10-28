@@ -8,19 +8,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class UtilsTest {
 
-    //@Test
+    @Test
     public void packUnpackTest() {
 
-        List<String> texts = Mock.mockTexts();
+        List<byte[]> texts = Mock.mockTexts();
 
         int okCounter = 0;
         int maxSymbolLength = 5;
 
         for (int symbolLength = 1; symbolLength <= maxSymbolLength; symbolLength++) {
-            for (String text : texts) {
-                HashMap<String, Integer> symbolCounter = HuffmanEncoder.calculateSymbolFrequency(text, symbolLength);
+            for (byte[] text : texts) {
+                HashMap<List<Byte>, Integer> symbolCounter = HuffmanEncoder.calculateSymbolFrequency(text, symbolLength);
                 HuffmanNode huffmanTree = HuffmanEncoder.buildHuffmanTree(symbolCounter);
-                HashMap<String, String> encodingTable = HuffmanEncoder.generateCodingTable(huffmanTree);
+                HashMap<List<Byte>, String> encodingTable = HuffmanEncoder.generateCodingTable(huffmanTree);
                 int symbolsCount = symbolCounter.values().stream().reduce(0, Integer::sum);
                 byte[] encodedText = HuffmanEncoder.encodeText(text, encodingTable, symbolLength);
                 byte[] encodedTable = HuffmanEncoder.encodeCodingTable(encodingTable, symbolsCount);

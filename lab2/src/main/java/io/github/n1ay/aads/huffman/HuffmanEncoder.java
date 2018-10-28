@@ -1,22 +1,21 @@
 package io.github.n1ay.aads.huffman;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static io.github.n1ay.aads.huffman.Config.*;
 
 public class HuffmanEncoder {
 
-    public static HashMap<String, Integer> calculateSymbolFrequency(String text, int symbolLength) {
-        HashMap<String, Integer> symbolCounter = new HashMap<>();
+    public static HashMap<List<Byte>, Integer> calculateSymbolFrequency(byte[] text, int symbolLength) {
+        HashMap<List<Byte>, Integer> symbolCounter = new HashMap<>();
 
-        String symbol;
-        for (int i = 0; i < text.length(); i += symbolLength) {
-            if (i + symbolLength < text.length()) {
-                symbol = text.substring(i, i + symbolLength);
+        List<Byte> symbol;
+        for (int i = 0; i < text.length; i += symbolLength) {
+            if (i + symbolLength < text.length) {
+                symbol = Arrays.asList(Utils.toObject(Utils.getBytes(text, i, symbolLength)));
             } else {
-                symbol = text.substring(i);
+                symbol = Arrays.asList(Utils.toObject(Utils.getBytes(text, i)));
             }
             Integer currentSymbolCount = symbolCounter.get(symbol);
             if (currentSymbolCount != null) {
@@ -27,12 +26,12 @@ public class HuffmanEncoder {
         return symbolCounter;
     }
 
-    public static HuffmanNode buildHuffmanTree(HashMap<String, Integer> symbolCounter) {
+    public static HuffmanNode buildHuffmanTree(HashMap<List<Byte>, Integer> symbolCounter) {
         PriorityQueue<HuffmanNode> huffmanNodeList = new PriorityQueue<>((node1, node2) ->
                 node1.getChildrenSymbolCount() + node1.getSymbolCount()
                         - node2.getChildrenSymbolCount() - node2.getSymbolCount());
 
-        for (String symbol : symbolCounter.keySet()) {
+        for (List<Byte> symbol : symbolCounter.keySet()) {
             huffmanNodeList.add(new HuffmanNode(symbol, symbolCounter.get(symbol)));
         }
 
@@ -50,32 +49,32 @@ public class HuffmanEncoder {
         return huffmanNodeList.peek();
     }
 
-    public static HashMap<String, String> generateCodingTable(HuffmanNode huffmanTree) {
-        HashMap<String, String> encodingTable = new HashMap<>();
+    public static HashMap<List<Byte>, String> generateCodingTable(HuffmanNode huffmanTree) {
+        HashMap<List<Byte>, String> encodingTable = new HashMap<>();
         Stack<Integer> codeStack = new Stack<>();
         huffmanTree.traverse(codeStack, encodingTable);
 
         return encodingTable;
     }
 
-    public static List<String> extractSymbols(String text, int symbolLength) {
-        List<String> symbolList = new LinkedList<>();
-        String symbol;
-        for (int i = 0; i < text.length(); i += symbolLength) {
-            if (i + symbolLength < text.length()) {
-                symbol = text.substring(i, i + symbolLength);
+    public static List<List<Byte>> extractSymbols(byte[] text, int symbolLength) {
+        List<List<Byte>> symbolList = new LinkedList<>();
+        List<Byte> symbol;
+        for (int i = 0; i < text.length; i += symbolLength) {
+            if (i + symbolLength < text.length) {
+                symbol = Arrays.asList(Utils.toObject(Utils.getBytes(text, i, symbolLength)));
             } else {
-                symbol = text.substring(i);
+                symbol = Arrays.asList(Utils.toObject(Utils.getBytes(text, i)));
             }
             symbolList.add(symbol);
         }
         return symbolList;
     }
 
-    public static byte[] encodeText(String text, HashMap<String, String> encodingTable, int symbolLength) {
+    public static byte[] encodeText(byte[] text, HashMap<List<Byte>, String> encodingTable, int symbolLength) {
         StringBuilder stringBuilder = new StringBuilder();
-        List<String> symbolList = extractSymbols(text, symbolLength);
-        for (String symbol : symbolList) {
+        List<List<Byte>> symbolList = extractSymbols(text, symbolLength);
+        for (List<Byte> symbol : symbolList) {
             stringBuilder.append(encodingTable.get(symbol));
         }
         char[] encodedText = stringBuilder.toString().toCharArray();
@@ -92,13 +91,13 @@ public class HuffmanEncoder {
         return bytes;
     }
 
-    public static byte[] encodeCodingTable(HashMap<String, String> encodingTable, int symbolCount) {
-        List<String> symbols = new ArrayList<>(encodingTable.keySet());
-        symbols.sort(Comparator.comparingInt(String::length));
+    public static byte[] encodeCodingTable(HashMap<List<Byte>, String> encodingTable, int symbolCount) {
+        List<List<Byte>> symbols = new ArrayList<>(encodingTable.keySet());
+        symbols.sort(Comparator.comparingInt(List::size));
 
         int codingTableLengthBits = HEADER_LENGTH;
-        for (String s : encodingTable.keySet()) {
-            codingTableLengthBits += s.length() * 8;
+        for (List<Byte> s : encodingTable.keySet()) {
+            codingTableLengthBits += s.size() * 8;
             codingTableLengthBits += 8;
             codingTableLengthBits += encodingTable.get(s).length();
         }
@@ -124,14 +123,14 @@ public class HuffmanEncoder {
             }
         }
 
-        bytes = new byte[]{(byte) symbols.get(symbols.size() - 1).length()};
+        bytes = new byte[]{(byte) symbols.get(symbols.size() - 1).size()};
         for (int i = 0; i < SYMBOL_LENGTH; i++, index++) {
             if (BitUtils.getBit(bytes, i)) {
                 BitUtils.setBit(codingTableBytes, index);
             }
         }
 
-        bytes = new byte[]{(byte) symbols.get(0).length()};
+        bytes = new byte[]{(byte) symbols.get(0).size()};
         for (int i = 0; i < SHORTEST_SYMBOL_LENGTH; i++, index++) {
             if (BitUtils.getBit(bytes, i)) {
                 BitUtils.setBit(codingTableBytes, index);
@@ -139,8 +138,7 @@ public class HuffmanEncoder {
         }
 
 
-        for (String symbol : symbols) {
-            byte[] currentSymbol = symbol.getBytes(StandardCharsets.US_ASCII);
+        for (List<Byte> currentSymbol : symbols) {
             for (byte ignored : currentSymbol) {
                 for (int k = 0; k < 8; k++, index++) {
                     if (BitUtils.getBit(new byte[]{ignored}, k))
@@ -148,7 +146,7 @@ public class HuffmanEncoder {
                 }
             }
 
-            String currentCode = encodingTable.get(symbol);
+            String currentCode = encodingTable.get(currentSymbol);
             int currentCodeLength = currentCode.length();
             byte[] currentCodeLengthBytes = {(byte) currentCodeLength};
             for (int k = 0; k < 8; k++, index++) {
@@ -161,7 +159,16 @@ public class HuffmanEncoder {
                     BitUtils.setBit(codingTableBytes, index);
             }
         }
-
         return codingTableBytes;
+    }
+
+    public static byte[] compress(byte[] text, int symbolLength) {
+        HashMap<List<Byte>, Integer> symbolCounter = calculateSymbolFrequency(text, symbolLength);
+        HuffmanNode huffmanTree = buildHuffmanTree(symbolCounter);
+        HashMap<List<Byte>, String> encodingTable = generateCodingTable(huffmanTree);
+        byte[] encodedText = encodeText(text, encodingTable, symbolLength);
+        int symbolCount = symbolCounter.values().stream().reduce(0,Integer::sum);
+        byte[] encodedTable = encodeCodingTable(encodingTable, symbolCount);
+        return Utils.packBytes(encodedTable, encodedText);
     }
 }
