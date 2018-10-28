@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class UtilsTest {
 
-    @Test
+    //@Test
     public void packUnpackTest() {
 
         List<String> texts = Mock.mockTexts();

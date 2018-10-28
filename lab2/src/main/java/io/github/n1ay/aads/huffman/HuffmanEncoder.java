@@ -143,7 +143,7 @@ public class HuffmanEncoder {
             byte[] currentSymbol = symbol.getBytes(StandardCharsets.US_ASCII);
             for (byte ignored : currentSymbol) {
                 for (int k = 0; k < 8; k++, index++) {
-                    if (BitUtils.getBit(currentSymbol, k))
+                    if (BitUtils.getBit(new byte[]{ignored}, k))
                         BitUtils.setBit(codingTableBytes, index);
                 }
             }

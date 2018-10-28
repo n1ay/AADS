@@ -72,21 +72,74 @@ public class HuffmanDecoder {
 
     public static HashMap<String, String> decodeTable(DecodingTableInfo tableInfo) {
         HashMap<String, String> decodingTable = new HashMap<>();
-        StringBuilder symbol = new StringBuilder();
-        byte[] symbolBytes = new byte[tableInfo.getShortestSymbolLength()];
-        byte[] prefixLength = new byte[1];
-        int index = 0;
-        for (int i = 0; i < tableInfo.getShortestSymbolLength() * 8; i++) {
-            if (BitUtils.getBit(tableInfo.getDecodingTableBytes(), index))
-                BitUtils.setBit(symbolBytes, i);
+        byte[] tableBytes = tableInfo.getDecodingTableBytes();
+        StringBuilder symbolBuilder = new StringBuilder();
+        byte[] symbolBytes = new byte[1];
+        byte[] prefixLengthBytes = new byte[1];
+        StringBuilder prefixBuilder = new StringBuilder();
 
-            index++;
+        int index = 0;
+        for (int i = 0; i < tableInfo.getShortestSymbolLength(); i++) {
+            for (int j = 0; j < 8; j++, index++) {
+                if (BitUtils.getBit(tableBytes, index))
+                    BitUtils.setBit(symbolBytes, j);
+            }
+            symbolBuilder.append(new String(symbolBytes));
+            symbolBytes[0] = 0;
         }
 
-        symbol.append(new String(symbolBytes));
+        for (int i = 0; i < 8; i++, index++) {
+            if (BitUtils.getBit(tableBytes, index))
+                BitUtils.setBit(prefixLengthBytes, i);
+        }
 
-        System.out.println(symbol.toString());
+        int prefixLength = prefixLengthBytes[0];
 
-        return null;
+        for (int i = 0; i < prefixLength; i++, index++) {
+            if (BitUtils.getBit(tableBytes, index))
+                prefixBuilder.append(1);
+            else
+                prefixBuilder.append(0);
+        }
+
+        decodingTable.put(prefixBuilder.toString(), symbolBuilder.toString());
+        prefixBuilder.setLength(0);
+        symbolBuilder.setLength(0);
+        prefixLengthBytes[0] = 0;
+        symbolBytes[0] = 0;
+
+        while (index < tableInfo.getHeaderLength() - HEADER_LENGTH) {
+
+            for (int i = 0; i < tableInfo.getSymbolLength(); i++) {
+                for (int j = 0; j < 8; j++, index++) {
+                    if (BitUtils.getBit(tableBytes, index))
+                        BitUtils.setBit(symbolBytes, j);
+                }
+                symbolBuilder.append(new String(symbolBytes));
+                symbolBytes[0] = 0;
+            }
+
+            for (int i = 0; i < 8; i++, index++) {
+                if (BitUtils.getBit(tableBytes, index))
+                    BitUtils.setBit(prefixLengthBytes, i);
+            }
+
+            prefixLength = prefixLengthBytes[0];
+
+            for (int i = 0; i < prefixLength; i++, index++) {
+                if (BitUtils.getBit(tableBytes, index))
+                    prefixBuilder.append(1);
+                else
+                    prefixBuilder.append(0);
+            }
+
+            decodingTable.put(prefixBuilder.toString(), symbolBuilder.toString());
+            prefixBuilder.setLength(0);
+            symbolBuilder.setLength(0);
+            prefixLengthBytes[0] = 0;
+            symbolBytes[0] = 0;
+        }
+
+        return decodingTable;
     }
 }
