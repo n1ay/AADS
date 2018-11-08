@@ -5,7 +5,7 @@ public class AppMain {
     public static void compress(String inputFilename, String outputFilename) {
         byte[] inputContent = Utils.readBinaryFile(inputFilename);
         byte[] inputSample;
-        int sampleSize = 10000;
+        int sampleSize = 100000;
         if (inputContent.length > sampleSize)
             inputSample = Utils.getBytes(inputContent, 0, sampleSize);
         else
@@ -16,8 +16,8 @@ public class AppMain {
         byte[] compressedData = HuffmanEncoder.compress(inputSample, symbolLength);
         int bestFileSize = compressedData.length;
         int stopCounter = 0;
-        System.out.println("[INFO] Symbol length=" + symbolLength + ", compression factor=" +
-                ((double) (inputContent.length - compressedData.length)) / inputContent.length * 100);
+        //System.out.println("[INFO] Symbol length=" + symbolLength + ", compression factor=" +
+        //        ((double) (inputSample.length - compressedData.length)) / inputSample.length * 100);
 
         while (stopCounter < 5) {
             symbolLength++;
@@ -30,8 +30,8 @@ public class AppMain {
                 stopCounter++;
             }
 
-            System.out.println("[INFO] Symbol length=" + symbolLength + ", compression factor=" +
-                    ((double) (inputContent.length - compressedData.length)) / inputContent.length * 100);
+            //System.out.println("[INFO] Symbol length=" + symbolLength + ", compression factor=" +
+            //        ((double) (inputContent.length - compressedData.length)) / inputContent.length * 100);
         }
 
         compressedData = HuffmanEncoder.compress(inputContent, bestSymbolLength);
