@@ -10,3 +10,6 @@ target/
 
 #articles, lectures, etc
 articles/
+
+#.o C/C++ files
+*.o
