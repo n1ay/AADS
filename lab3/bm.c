@@ -3,10 +3,10 @@
 int get_last_pos(char character, char* pattern, int pattern_length) {
     for (int i = pattern_length - 1; i >= 0; i--) {
         if (pattern[i] == character)
-    return i;
-}
+            return i;
+    }
 
-return -1;
+    return -1;
 }
  
 int* get_pos_table(char* pattern, int pattern_length) {
@@ -18,9 +18,8 @@ int* get_pos_table(char* pattern, int pattern_length) {
     return pos_table;
 }
 
-struct occ_table_info get_occ_table(char* text, char* pattern) {
+array get_occ_table(char* text, int text_length, char* pattern) {
     int pattern_length = strlen(pattern);
-    int text_length = strlen(text);
     int* pos_table = get_pos_table(pattern, pattern_length);
 
     char* text_cmp_mem = malloc(pattern_length + 1);
@@ -49,9 +48,9 @@ struct occ_table_info get_occ_table(char* text, char* pattern) {
     free(pos_table);
     free(text_cmp_mem);
 
-    struct occ_table_info table_info;
-    table_info.occ_table = occ_table;
-    table_info.occ_table_length = occ_counter;
+    array table_info;
+    table_info.data = occ_table;
+    table_info.length = occ_counter;
 
     return table_info;
 }
