@@ -1,11 +1,5 @@
 #include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include "bm.h"
-
-#define BUFSIZE 8096
-
-array read_file(char* filename);
 
 int main(int argc, char* argv[]) {
 
@@ -15,41 +9,21 @@ int main(int argc, char* argv[]) {
         exit(-1);
     }
 
-    array file_info = read_file(argv[2]);
-    array table_info = get_occ_table(file_info.data, file_info.length, argv[1]);
+    int fd = open(argv[2], O_RDONLY);
+
 
     if ((argc == 4) && ((!strcmp(argv[3], "-p")) || (!strcmp(argv[3], "--pos")))) {
+        array table_info = get_occ_table(fd, argv[1]);
         for(int i = 0; i < table_info.length; i++) {
-            printf("%d\n", ((unsigned int*)table_info.data)[i]);
+            printf("%ld\n", ((unsigned long*)table_info.data)[i]);
         }
+
+        free(table_info.data);
+
     } else {
-        printf("matches: %ld\n", table_info.length);
+        printf("matches: %ld\n", count_occurences(fd, argv[1]));
     }
 
-    free(table_info.data);
-    free(file_info.data);
-    return 0;
-}
-
-array read_file(char* filename) {
-    int fd = open(filename, O_RDONLY);
-    unsigned long file_size = lseek(fd, 0, SEEK_END);
-    lseek(fd, 0, SEEK_SET);
-    char* file_contents = malloc(file_size * sizeof(char));
-    unsigned long content_size = 0;
-    int read_bytes = 0;
-
-    char* buf = malloc(BUFSIZE);
-
-    while((read_bytes = read(fd, buf, BUFSIZE))) {
-        memcpy(file_contents + content_size, buf, read_bytes);
-        content_size += read_bytes;
-    }
-    array file_info;
-    file_info.data = file_contents;
-    file_info.length = content_size;
-
-    free(buf);
     close(fd);
-    return file_info;
+    return 0;
 }
