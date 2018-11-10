@@ -18,14 +18,14 @@ int* get_pos_table(char* pattern, int pattern_length) {
     return pos_table;
 }
 
-array get_occ_table(char* text, int text_length, char* pattern) {
+array get_occ_table(char* text, unsigned long text_length, char* pattern) {
     int pattern_length = strlen(pattern);
     int* pos_table = get_pos_table(pattern, pattern_length);
 
     char* text_cmp_mem = malloc(pattern_length + 1);
     text_cmp_mem[pattern_length] = 0;
     int occ_counter = 0;
-    int occ_table_size = 256;
+    size_t occ_table_size = 256;
     unsigned int* occ_table = malloc(occ_table_size * sizeof(unsigned int));
 
 
@@ -40,7 +40,7 @@ array get_occ_table(char* text, int text_length, char* pattern) {
 
             if (occ_counter == occ_table_size) {
                 occ_table_size *= 2;
-                occ_table = realloc(occ_table, occ_table_size);
+                occ_table = realloc(occ_table, occ_table_size * sizeof(unsigned int));
             }
         }
     }

@@ -8,11 +8,11 @@
 
 typedef struct array {
     void* data;
-    int length;
+    unsigned long length;
 } array;
 
 int last_pos(char character, char* pattern, int pattern_length);
 int* get_pos_table(char* pattern, int pattern_length);
-array get_occ_table(char* text, int text_length, char* pattern);
+array get_occ_table(char* text, unsigned long text_length, char* pattern);
 
 #endif

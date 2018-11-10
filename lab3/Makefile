@@ -1,5 +1,7 @@
 CC=gcc
-CFLAGS=-Wall -Werror -pedantic -O2 -Wno-char-subscripts
+CFLAGS=-Wall -Werror -pedantic -Wno-char-subscripts
+OPTFLAG=-O2
+DEBUGFLAGS=-g3 -O0
 
 DEPS=bm.h
 LIBS=
@@ -9,10 +11,10 @@ main: $(OBJ)
 	$(CC) -o $@ $^
 
 %.o: %.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS) $(OPTFLAG)
 
 .PHONY: clean
 
 clean:
-	rm *.o
-	rm main
+	rm -rf *.o
+	rm -rf main
