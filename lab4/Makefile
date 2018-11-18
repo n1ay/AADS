@@ -3,14 +3,14 @@ CFLAGS=-Wall -Werror -pedantic -std=c++11
 OPTFLAG=-O2
 DEBUGFLAGS=-g3 -O0
 
-DEPS=
+DEPS=Cost.hpp
 LIBS=-larmadillo -lpthread
-OBJ=main.o
+OBJ=main.o Cost.o
 
 main: $(OBJ)
 	$(CC) -o $@ $^ $(LIBS)
 
-%.o: %.c $(DEPS)
+%.o: %.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS) $(OPTFLAG)
 
 .PHONY: clean

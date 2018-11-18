@@ -1,11 +1,11 @@
 #include <cstdio>
 #include <armadillo>
-#include <list>
 #include <algorithm>
 #include <unistd.h>
 #include <utility>
 #include <thread>
 #include <chrono>
+#include "Cost.hpp"
 
 #define SLEEPTIME_NS 1
 
@@ -13,10 +13,11 @@ std::list<arma::Mat<double>> readData(std::string);
 arma::Mat<double> computeSequential(std::list<arma::Mat<double> > arrayList);
 arma::Mat<double> computeParallel(std::list<arma::Mat<double> > arrayList);
 void computeSequentialWorker(std::list<arma::Mat<double> > arrayList, arma::Mat<double> & setResult);
+std::vector<std::vector<Cost> > calcCost (std::list<arma::Mat<double> > arrayList);
 
 int main() {
     auto matrices = readData("data.txt");
-    std::chrono::time_point<std::chrono::steady_clock> start = std::chrono::steady_clock::now();
+    /*std::chrono::time_point<std::chrono::steady_clock> start = std::chrono::steady_clock::now();
     std::cout<<computeSequential(matrices)<<std::endl;
     std::chrono::time_point<std::chrono::steady_clock> stop = std::chrono::steady_clock::now();
     std::chrono::duration<double, std::milli> elapsed = stop - start;
@@ -28,7 +29,11 @@ int main() {
     stop = std::chrono::steady_clock::now();
     elapsed = stop - start;
     std::cout<<"Parallel: " << elapsed.count() << " ms"<<std::endl;
-
+*/
+    auto costs = calcCost(matrices);
+    for (unsigned i = 1; i < matrices.size(); i++) {
+        std::cout<<costs[i][i-1]<<std::endl;
+    }
     return 0;
 }
 
@@ -81,6 +86,20 @@ arma::Mat<double> computeParallel(std::list<arma::Mat<double> > arrayList) {
     }
     
     return computeSequential(resultsList);
+}
+
+std::vector<std::vector<Cost> > calcCost(std::list<arma::Mat<double> > arrayList) {
+    std::vector<std::vector<Cost> > costs(arrayList.size());
+    for (unsigned i = 0; i < arrayList.size(); i++) {
+        costs[i] = std::vector<Cost>(i);
+    }
+    
+    unsigned i = 1;
+    for (auto it = arrayList.begin(), itNext = ++(arrayList.begin()); itNext != arrayList.end(); it++, itNext++, i++) {
+        costs[i][i-1] = Cost({i-1, i}, (*it).n_rows*(*it).n_cols*(*itNext).n_cols);
+    }
+
+    return costs;
 }
 
 
