@@ -46,21 +46,11 @@ arma::Mat<double> computeSequential(std::list<arma::Mat<double> > arrayList) {
 }
 
 void computeSequentialWorker(std::list<arma::Mat<double> > arrayList, arma::Mat<double> & setResult) {
-    auto it = arrayList.begin();
-    arma::Mat<double> result = *it;
-    it++;
-    while(it != arrayList.end()) {
-        result = result * (*it);
-        std::this_thread::sleep_for(std::chrono::nanoseconds(SLEEPTIME_NS));
-        it++;
-    }
-
-    setResult = result;
+    setResult = computeSequential(arrayList);
 }
 
 arma::Mat<double> computeParallel(std::list<arma::Mat<double> > arrayList) {
-    //const unsigned numThreads = sysconf(_SC_NPROCESSORS_ONLN);
-    const unsigned numThreads = 4;
+    const unsigned numThreads = sysconf(_SC_NPROCESSORS_ONLN);
     arma::Mat<double> result;
 
     std::vector<std::list<arma::Mat<double> > > arrays(numThreads);
@@ -71,6 +61,10 @@ arma::Mat<double> computeParallel(std::list<arma::Mat<double> > arrayList) {
         for(unsigned j = 0; j < arrayList.size() / numThreads; j++, it++) {
             arrays[i].push_back(*it);
         }
+    }
+    while (it != arrayList.end()) {
+        arrays[numThreads-1].push_back(*it);
+        it++;
     }
 
     std::vector<std::thread> threads(numThreads);
