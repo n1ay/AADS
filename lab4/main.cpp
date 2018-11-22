@@ -1,5 +1,4 @@
 #include <cstdio>
-#include <armadillo>
 #include <algorithm>
 #include <unistd.h>
 #include <utility>
@@ -9,11 +8,12 @@
 
 #define SLEEPTIME_NS 1
 
-std::list<arma::Mat<double>> readData(std::string); 
-arma::Mat<double> computeSequential(std::list<arma::Mat<double> > arrayList);
-arma::Mat<double> computeParallel(std::list<arma::Mat<double> > arrayList);
-void computeSequentialWorker(std::list<arma::Mat<double> > arrayList, arma::Mat<double> & setResult);
-std::vector<std::vector<Cost> > calcCost (std::list<arma::Mat<double> > arrayList);
+std::list<arma::Mat<double>> readData(const std::string & filename); 
+arma::Mat<double> computeSequential(const std::list<arma::Mat<double> > & arrayList);
+arma::Mat<double> computeParallel(const std::list<arma::Mat<double> > & arrayList);
+void computeSequentialWorker(const std::list<arma::Mat<double> > & arrayList, arma::Mat<double> & setResult);
+std::vector<std::vector<Cost> > calcCostTable (const std::list<arma::Mat<double> > & arrayList);
+Cost calcCost (const std::vector<arma::Mat<double> > & arrayList, const std::vector<std::vector<Cost> > & costs, unsigned indexh, unsigned indexv);
 
 int main() {
     auto matrices = readData("data.txt");
@@ -30,14 +30,14 @@ int main() {
     elapsed = stop - start;
     std::cout<<"Parallel: " << elapsed.count() << " ms"<<std::endl;
 */
-    auto costs = calcCost(matrices);
+    auto costs = calcCostTable(matrices);
     for (unsigned i = 1; i < matrices.size(); i++) {
         std::cout<<costs[i][i-1]<<std::endl;
     }
     return 0;
 }
 
-arma::Mat<double> computeSequential(std::list<arma::Mat<double> > arrayList) {
+arma::Mat<double> computeSequential(const std::list<arma::Mat<double> > & arrayList) {
     auto it = arrayList.begin();
     arma::Mat<double> result = *it;
     it++;
@@ -50,11 +50,11 @@ arma::Mat<double> computeSequential(std::list<arma::Mat<double> > arrayList) {
     return result;
 }
 
-void computeSequentialWorker(std::list<arma::Mat<double> > arrayList, arma::Mat<double> & setResult) {
+void computeSequentialWorker(const std::list<arma::Mat<double> > & arrayList, arma::Mat<double> & setResult) {
     setResult = computeSequential(arrayList);
 }
 
-arma::Mat<double> computeParallel(std::list<arma::Mat<double> > arrayList) {
+arma::Mat<double> computeParallel(const std::list<arma::Mat<double> > & arrayList) {
     const unsigned numThreads = sysconf(_SC_NPROCESSORS_ONLN);
     arma::Mat<double> result;
 
@@ -88,22 +88,51 @@ arma::Mat<double> computeParallel(std::list<arma::Mat<double> > arrayList) {
     return computeSequential(resultsList);
 }
 
-std::vector<std::vector<Cost> > calcCost(std::list<arma::Mat<double> > arrayList) {
+std::vector<std::vector<Cost> > calcCostTable(const std::list<arma::Mat<double> > & arrayList) {
+    std::vector<arma::Mat<double> > arrayVector;
+    arrayVector.reserve(arrayList.size());
+    std::copy(arrayList.begin(), arrayList.end(), std::back_inserter(arrayVector));
     std::vector<std::vector<Cost> > costs(arrayList.size());
     for (unsigned i = 0; i < arrayList.size(); i++) {
-        costs[i] = std::vector<Cost>(i);
+        costs[i] = std::vector<Cost>(i + 1);
     }
     
     unsigned i = 1;
     for (auto it = arrayList.begin(), itNext = ++(arrayList.begin()); itNext != arrayList.end(); it++, itNext++, i++) {
-        costs[i][i-1] = Cost({i-1, i}, (*it).n_rows*(*it).n_cols*(*itNext).n_cols);
+        costs[i][i-1] = Cost({std::make_pair(i-1, i)}, (*it).n_rows*(*it).n_cols*(*itNext).n_cols);
+    }
+
+
+    for (i = 2; i < arrayList.size(); i++) {
+        std::cout<<"Debug: "<< i << " " <<std::endl;
+        for (unsigned j = 0; j < i; j++) {
+            costs[i][j] = calcCost(arrayVector, costs, i, j);
+        }
     }
 
     return costs;
 }
 
+Cost calcCost(const std::vector<arma::Mat<double> > & arrayVector, const std::vector<std::vector<Cost> > & costs,  unsigned indexh, unsigned indexv) {
+    Cost costLeftGroup = costs[indexh - 1][indexv];
+    unsigned costValueLeft = costLeftGroup.cost + costLeftGroup.getRows(arrayVector) * arrayVector[indexh].n_cols * arrayVector[indexh].n_rows;
+    
+    Cost costRightGroup = costs[indexh][indexv + 1];
+    unsigned costValueRight = costRightGroup.cost + costRightGroup.getRows(arrayVector) * arrayVector[indexv].n_cols * arrayVector[indexv].n_rows;
 
-std::list<arma::Mat<double> > readData(std::string filename) {
+    if (costValueRight > costValueLeft) {
+        costRightGroup.seq.push_back(std::make_pair(indexv, indexv + 1));
+        costRightGroup.cost = costValueRight;
+        return costRightGroup;
+    }
+
+    costLeftGroup.seq.push_back(std::make_pair(indexh - 1, indexh));
+    costLeftGroup.cost = costValueLeft;
+    return costLeftGroup;
+}
+
+
+std::list<arma::Mat<double> > readData(const std::string & filename) {
     std::list<arma::Mat<double>> matrices;
     std::ifstream ifs;
     std::string line;
